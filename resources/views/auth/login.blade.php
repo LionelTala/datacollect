@@ -51,8 +51,5 @@
     <a href="{{ route('register') }}" class="text-decoration-none fw-semibold ms-1">Créer un compte</a>
 </div>
 
-<div class="alert alert-info mt-4 text-center small">
-    <i class="fas fa-info-circle me-1"></i>
-    Compte admin : <strong>admin@datacollect.com</strong> / <strong>Admin123!</strong>
-</div>
+
 @endsection
