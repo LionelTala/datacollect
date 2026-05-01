@@ -1,0 +1,36 @@
+<?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+use App\Livewire\Dashboard;
+use App\Livewire\Collecte\CreateCollecte;
+use App\Livewire\Collecte\ListCollectes;
+use App\Livewire\Collecte\ShowCollecte;
+use App\Livewire\Profile\EditProfile;
+use App\Livewire\Analyse\AnalyseCollecte;
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// Dashboard avec Livewire
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/collectes', ListCollectes::class)->name('collectes.list');
+    Route::get('/collecte/creer', CreateCollecte::class)->name('collecte.create');
+    Route::get('/profile', EditProfile::class)->name('profile.edit');
+    Route::get('/collecte/{id}', ShowCollecte::class)->name('collecte.show');
+    Route::get('/analyse/{id}', AnalyseCollecte::class)->name('analyse.show');
+
+});
