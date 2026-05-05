@@ -95,14 +95,17 @@
                                 @endif
                             </div>
 
-                            <a href="{{ route('collecte.show', $collecte->id) }}" class="text-decoration-none">
-                                <h5 class="fw-bold mb-2" style="line-height: 1.3; color: #1e293b;">{{ $collecte->nom }}</h5>
-                            </a>
+                            <h5 class="fw-bold mb-2" style="line-height: 1.3;">{{ $collecte->nom }}</h5>
                             <p class="text-muted small mb-3" style="min-height: 60px;">
                                 {{ Str::limit($collecte->description, 80) ?: 'Aucune description' }}
                             </p>
 
-                            <div class="mb-3">
+                            <!-- BOUTON VOIR LA COLLECTE -->
+                            <a href="{{ route('collecte.show', $collecte->id) }}" class="btn btn-primary w-100 rounded-3 mb-3">
+                                <i class="fas fa-eye me-2"></i>Voir la collecte
+                            </a>
+
+                            <div class="mb-2">
                                 <div class="d-flex justify-content-between align-items-center text-muted small">
                                     <div>
                                         <i class="fas fa-calendar-alt me-1 text-primary"></i>
