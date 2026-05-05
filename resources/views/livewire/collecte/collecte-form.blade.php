@@ -46,30 +46,57 @@
                                 @endforeach
 
                             @elseif($field['type'] == 'file_image')
-                                <div class="border rounded-3 p-3 bg-light" x-data="{ fileName: '' }">
+                                <div class="border rounded-3 p-3 bg-light"
+                                     x-data="imageCompressor({
+                                         fieldName: '{{ $field['name'] }}',
+                                         maxWidth:  {{ $field['max_width']  ?? 800 }},
+                                         maxHeight: {{ $field['max_height'] ?? 600 }},
+                                         quality:   {{ ($field['quality']   ?? 60) / 100 }},
+                                         maxSizeMB: {{ $field['max_size']   ?? 5 }}
+                                     })">
+
                                     <label class="fw-semibold mb-2 d-block">
                                         <i class="fas fa-image me-2 text-primary"></i>Choisir une image
                                     </label>
+
                                     <input type="file"
-                                           wire:model="files.{{ $field['name'] }}"
                                            class="form-control rounded-3"
                                            accept="image/*"
-                                           x-on:change="fileName = $event.target.files[0]?.name || ''">
+                                           capture="environment"
+                                           x-ref="fileInput"
+                                           x-on:change="compress($event)">
+
+
+
+                                    <div x-show="state === 'done'" class="mt-2">
+                                        <span class="badge bg-success">
+                                            &#10003; <span x-text="fileName"></span>
+                                        </span>
+                                        <small class="text-muted ms-2">
+                                            <span x-text="originalSize"></span> &rarr; <span x-text="compressedSize"></span>
+                                            (<span x-text="ratio"></span>% allégé)
+                                        </small>
+                                    </div>
+
+                                    <div x-show="state === 'error'" class="mt-2">
+                                        <small class="text-danger" x-text="errorMsg"></small>
+                                    </div>
 
                                     <div class="mt-2">
                                         <small class="text-muted">
                                             <i class="fas fa-info-circle me-1"></i>
-                                            Max {{ $field['max_size'] ?? 5 }} MB.
+                                            Max {{ $field['max_size'] ?? 5 }} MB &mdash; image compressée avant envoi.
                                         </small>
                                     </div>
 
-                                    <div x-show="fileName" class="mt-2">
-                                        <span class="badge bg-success" x-text="'✓ ' + fileName"></span>
-                                    </div>
+                                    <input type="file"
+                                           wire:model="files.{{ $field['name'] }}"
+                                           x-ref="livewireInput"
+                                           style="display:none">
 
                                     <div wire:loading wire:target="files.{{ $field['name'] }}" class="mt-2">
                                         <span class="spinner-border spinner-border-sm text-primary me-1"></span>
-                                        <span class="small text-muted">Téléchargement...</span>
+                                        <small class="text-muted">Transfert vers le serveur…</small>
                                     </div>
 
                                     @error('files.' . $field['name'])
@@ -94,7 +121,7 @@
                                         </small>
                                     </div>
                                     <div x-show="fileName" class="mt-2">
-                                        <span class="badge bg-success" x-text="'✓ ' + fileName"></span>
+                                        <span class="badge bg-success" x-text="'&#10003; ' + fileName"></span>
                                     </div>
                                     @error('files.' . $field['name'])
                                         <small class="text-danger d-block mt-2">{{ $message }}</small>
@@ -106,14 +133,13 @@
                         </div>
                     @endforeach
 
-                    <!-- Loader global -->
                     <div wire:loading wire:target="submit" class="alert alert-info rounded-3 mb-3">
                         <div class="d-flex align-items-center gap-3">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Chargement...</span>
+                                <span class="visually-hidden">Chargement…</span>
                             </div>
                             <div>
-                                <strong>Traitement en cours...</strong><br>
+                                <strong>Traitement en cours…</strong><br>
                                 <small>Sauvegarde des données, veuillez patienter.</small>
                             </div>
                         </div>
@@ -121,7 +147,7 @@
 
                     <button type="submit" class="btn btn-primary rounded-3 px-4 py-2" wire:loading.attr="disabled">
                         <span wire:loading.remove><i class="fas fa-paper-plane me-2"></i>Envoyer</span>
-                        <span wire:loading><i class="fas fa-spinner fa-spin me-2"></i>Traitement...</span>
+                        <span wire:loading><i class="fas fa-spinner fa-spin me-2"></i>Traitement…</span>
                     </button>
                 </form>
             @endif

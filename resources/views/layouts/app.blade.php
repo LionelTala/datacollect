@@ -301,5 +301,122 @@
             document.getElementById('sidebar').classList.toggle('open');
         });
     </script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('imageCompressor', (config) => ({
+            state:          'idle',
+            fileName:       '',
+            originalSize:   '',
+            compressedSize: '',
+            ratio:          '',
+            errorMsg:       '',
+
+            async compress(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    this._error('Fichier non supporté. Choisissez une image.');
+                    return;
+                }
+
+                this.state        = 'compressing';
+                this.fileName     = file.name;
+                this.originalSize = this._fmt(file.size);
+
+                try {
+                    const compressed = await this._pipeline(file, {
+                        maxSize: config.maxSize || 512,
+                        quality: config.quality || 0.92
+                    });
+                    this._inject(compressed, file.name);
+                    this.compressedSize = this._fmt(compressed.size);
+                    this.ratio          = Math.round((1 - compressed.size / file.size) * 100);
+                    this.state          = 'done';
+
+
+                } catch (e) {
+                    this._error('Erreur de compression. Envoi de l\'original.');
+                    // En cas d'erreur, envoyer l'image originale
+                    this._inject(file, file.name);
+                    this.compressedSize = this.originalSize;
+                    this.ratio = 0;
+                    this.state = 'done';
+                }
+            },
+
+            _pipeline(file, cfg) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            let w = img.width, h = img.height;
+                            const targetSize = cfg.maxSize;
+                            let newWidth = targetSize;
+                            let newHeight = targetSize;
+
+                            if (w > h) {
+                                newHeight = Math.round(targetSize * (h / w));
+                            } else {
+                                newWidth = Math.round(targetSize * (w / h));
+                            }
+
+                            const canvas = document.createElement('canvas');
+                            canvas.width = newWidth;
+                            canvas.height = newHeight;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                            // Qualité haute (92-95%)
+                            const quality = 0.92;
+
+                            canvas.toBlob((blob) => {
+                                if (!blob) {
+                                    reject(new Error('Échec compression'));
+                                    return;
+                                }
+                                resolve(blob);
+                            }, 'image/jpeg', quality);
+                        };
+                        img.onerror = () => reject(new Error('Image corrompue'));
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = () => reject(new Error('Lecture échouée'));
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            _inject(blob, originalName) {
+                const baseName = originalName.replace(/\.[^.]+$/, '');
+                const suffix = blob.size < 500000 ? '_low' : '';
+                const newFile = new File([blob], baseName + suffix + '.jpg', { type: 'image/jpeg' });
+                const dt = new DataTransfer();
+                dt.items.add(newFile);
+                const livewireInput = this.$refs.livewireInput;
+                livewireInput.files = dt.files;
+                livewireInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+                setTimeout(() => {
+                    if (this.state === 'done') this.state = 'idle';
+                }, 3000);
+            },
+
+            _error(msg) {
+                this.state = 'error';
+                this.errorMsg = msg;
+                setTimeout(() => {
+                    if (this.state === 'error') this.state = 'idle';
+                }, 3000);
+            },
+
+            _fmt(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(0) + ' KB';
+                return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+        }));
+    });
+</script>
 </body>
 </html>
