@@ -49,10 +49,9 @@
                                 <div class="border rounded-3 p-3 bg-light"
                                      x-data="imageCompressor({
                                          fieldName: '{{ $field['name'] }}',
-                                         maxWidth:  {{ $field['max_width']  ?? 800 }},
-                                         maxHeight: {{ $field['max_height'] ?? 600 }},
-                                         quality:   {{ ($field['quality']   ?? 60) / 100 }},
-                                         maxSizeMB: {{ $field['max_size']   ?? 5 }}
+                                         maxSize:   512,
+                                         quality:   0.92,
+                                         maxSizeMB: {{ $field['max_size'] ?? 5 }}
                                      })">
 
                                     <label class="fw-semibold mb-2 d-block">
@@ -62,18 +61,15 @@
                                     <input type="file"
                                            class="form-control rounded-3"
                                            accept="image/*"
-                                           capture="environment"
                                            x-ref="fileInput"
                                            x-on:change="compress($event)">
 
-
-
                                     <div x-show="state === 'done'" class="mt-2">
                                         <span class="badge bg-success">
-                                            &#10003; <span x-text="fileName"></span>
+                                            ✓ <span x-text="fileName"></span>
                                         </span>
                                         <small class="text-muted ms-2">
-                                            <span x-text="originalSize"></span> &rarr; <span x-text="compressedSize"></span>
+                                            <span x-text="originalSize"></span> → <span x-text="compressedSize"></span>
                                             (<span x-text="ratio"></span>% allégé)
                                         </small>
                                     </div>
@@ -85,7 +81,7 @@
                                     <div class="mt-2">
                                         <small class="text-muted">
                                             <i class="fas fa-info-circle me-1"></i>
-                                            Max {{ $field['max_size'] ?? 5 }} MB &mdash; image compressée avant envoi.
+                                            Max {{ $field['max_size'] ?? 5 }} MB — compression (512x512, qualité 92%)
                                         </small>
                                     </div>
 
@@ -121,7 +117,11 @@
                                         </small>
                                     </div>
                                     <div x-show="fileName" class="mt-2">
-                                        <span class="badge bg-success" x-text="'&#10003; ' + fileName"></span>
+                                        <span class="badge bg-success" x-text="'✓ ' + fileName"></span>
+                                    </div>
+                                    <div wire:loading wire:target="files.{{ $field['name'] }}" class="mt-2">
+                                        <span class="spinner-border spinner-border-sm text-primary me-1"></span>
+                                        <small class="text-muted">Transfert…</small>
                                     </div>
                                     @error('files.' . $field['name'])
                                         <small class="text-danger d-block mt-2">{{ $message }}</small>
