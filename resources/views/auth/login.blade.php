@@ -51,5 +51,5 @@
     <a href="{{ route('register') }}" class="text-decoration-none fw-semibold ms-1">Créer un compte</a>
 </div>
 
-
+ 
 @endsection

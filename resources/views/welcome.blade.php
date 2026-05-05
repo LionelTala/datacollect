@@ -460,7 +460,7 @@
             </div>
             <hr class="my-4">
             <div class="text-center text-muted small">
-                © 2024 DataCollect. Tous droits réservés.
+                © 2026 DataCollect. Tous droits réservés.
             </div>
         </div>
     </footer>
