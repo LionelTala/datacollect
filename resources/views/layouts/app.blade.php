@@ -277,6 +277,17 @@
                 </form>
             </div>
         </div>
+        @if(Auth::user() && Auth::user()->is_admin)
+            <li class="nav-item">
+                <hr class="my-2">
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                    <i class="fas fa-crown me-2"></i>
+                    <span>Administration</span>
+                </a>
+            </li>
+        @endif
     </div>
 
     <div class="main-content">

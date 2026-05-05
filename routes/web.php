@@ -38,3 +38,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/analyse/{id}', AnalyseCollecte::class)->name('analyse.show');
 
 });
+
+use App\Livewire\Admin\AdminDashboard;
+use App\Livewire\Admin\AdminUsers;
+use App\Livewire\Admin\AdminCollectes;
+use App\Livewire\Admin\AdminSettings;
+
+// Routes Admin (protégées)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', AdminDashboard::class)->name('dashboard');
+    Route::get('/utilisateurs', AdminUsers::class)->name('users');
+    Route::get('/collectes', AdminCollectes::class)->name('collectes');
+    Route::get('/parametres', AdminSettings::class)->name('settings');
+});
